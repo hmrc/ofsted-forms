@@ -30,6 +30,7 @@ import scala.concurrent.Future
 @ImplementedBy(classOf[DefaultDraftFormRepository])
 trait DraftFormRepository {
   def saveForm(d: DraftForm): Future[Option[DraftForm]]
+  def getForm(id : String) : Future[Option[DraftForm]]
 
   def findById(id: String): Future[Option[DraftForm]]
 }
@@ -47,6 +48,8 @@ class DefaultDraftFormRepository @Inject()(reactiveMongoComponent: ReactiveMongo
       .findAndUpdate(BSONDocument("id" -> draftForm.id), draftForm, fetchNewObject = true, upsert = true)
       .map(_.result[DraftForm])
   }
+
+  override def getForm(id: String): Future[Option[DraftForm]] = collection.find(BSONDocument("id" -> id)).one[DraftForm]
 
   override def findById(id: String): Future[Option[DraftForm]] =
     collection.find(BSONDocument("id" -> id)).one[DraftForm]

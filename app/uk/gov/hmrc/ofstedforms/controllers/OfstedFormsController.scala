@@ -32,11 +32,22 @@ class OfstedFormsController @Inject()(fs: FormSubmissionService) extends BaseCon
 
   def createDraft(): Action[AnyContent] = Action.async {
     implicit request =>
-      val draftForm = DraftForm(randomUUID().toString, "sdfdsf", Occurrence(AuthenticatedUser("sdf", "sdfsd"), "sdfsdf"))
-      val d = DraftForm("1", "SC1", Occurrence(AuthenticatedUser("1234567890", "user@ofsted.com"), "2019-01-20"))
+      val draftForm = DraftForm(randomUUID().toString, "", Occurrence(AuthenticatedUser("", ""), ""))
       fs.saveForm(draftForm).map {
         case Some(res) => Ok(Json.obj("id" -> res.id))
-        case None => BadRequest("Some problem")
+        case None => BadRequest("Initial draft form record was not inserted")
+      }.recover {
+        case e: Throwable => InternalServerError(s"${e.getMessage}")
+      }
+  }
+
+  def getForm(id : String) = Action.async{
+    implicit request =>
+      fs.getForm(id).map{
+        case Some(form) => Ok(Json.toJson(form))
+        case None => BadRequest(s"A form does not exist with id : {$id}")
+      }.recover{
+        case e : Throwable => InternalServerError(s"${e.getMessage}")
       }
   }
 

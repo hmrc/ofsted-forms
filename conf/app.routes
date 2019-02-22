@@ -2,8 +2,8 @@
 
 # user endpoints
 POST        /form                   uk.gov.hmrc.ofstedforms.controllers.OfstedFormsController.createDraft()
-#POST        /form/:id/submission    uk.gov.hmrc.ofstedforms.controllers.OfstedFormsController.submitForm(id : String)
-#GET         /form/:id               uk.gov.hmrc.ofstedforms.controllers.OfstedFormsController.getForm(id : String)
+GET         /form/:id               uk.gov.hmrc.ofstedforms.controllers.OfstedFormsController.getForm(id : String)
+POST        /form/:id/submission    uk.gov.hmrc.ofstedforms.controllers.OfstedFormsController.submitForm(id : String)
 
 # admin endpoints
 #GET         /form/submissions       uk.gov.hmrc.ofstedforms.controllers.OfstedFormsController.getAllSubmittedForms()
