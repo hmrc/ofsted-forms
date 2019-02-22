@@ -19,17 +19,19 @@ package uk.gov.hmrc.ofstedforms.controllers
 import java.util.UUID.randomUUID
 
 import javax.inject.{Inject, Singleton}
-import play.api.libs.json.Json
+import play.api.libs.json.{JsError, Json}
 import play.api.mvc._
 import uk.gov.hmrc.ofstedforms.models.{AuthenticatedUser, DraftForm, Occurrence}
 import uk.gov.hmrc.ofstedforms.service.FormSubmissionService
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 @Singleton()
 class OfstedFormsController @Inject()(fs: FormSubmissionService) extends BaseController {
 
+  // user functions
   def createDraft(): Action[AnyContent] = Action.async {
     implicit request =>
       val draftForm = DraftForm(randomUUID().toString, "", Occurrence(AuthenticatedUser("", ""), ""))
@@ -41,15 +43,33 @@ class OfstedFormsController @Inject()(fs: FormSubmissionService) extends BaseCon
       }
   }
 
-  def getForm(id : String) = Action.async{
+  def getForm(id: String): Action[AnyContent] = Action.async {
     implicit request =>
-      fs.getForm(id).map{
+      fs.getForm(id).map {
         case Some(form) => Ok(Json.toJson(form))
         case None => BadRequest(s"A form does not exist with id : {$id}")
-      }.recover{
-        case e : Throwable => InternalServerError(s"${e.getMessage}")
+      }.recover {
+        case e: Throwable => InternalServerError(s"${e.getMessage}")
       }
   }
+
+  def submitForm(id: String) = Action.async(parse.json) {
+    implicit request =>
+      val formSubmission = request.body.validate[DraftForm]
+      formSubmission.fold(
+        errors => {
+          Future.successful(BadRequest(s"Invalid submission payload: ${JsError.toJson(errors)}"))
+        },
+        form => {
+          fs.updateForm(form).map { _ => NoContent
+          }.recover {
+            case e: Throwable => InternalServerError(s"${e.getMessage}")
+          }
+        }
+      )
+  }
+
+  // admin functions
 
   //  def findDraft(userId: String, formType: String) = {
   //    //This represents the latest form which is in draft for this user and not in submitted - there should only be one of these

@@ -27,6 +27,7 @@ import scala.concurrent.Future
 trait FormSubmissionService {
   def saveForm(df: DraftForm): Future[Option[DraftForm]]
   def getForm(id : String) : Future[Option[DraftForm]]
+  def updateForm(draftForm: DraftForm) : Future[Int]
 }
 
 class DefaultFormSubmissionService @Inject()
@@ -37,4 +38,6 @@ class DefaultFormSubmissionService @Inject()
   override def saveForm(draft: DraftForm): Future[Option[DraftForm]] = draftFormRepository.saveForm(draft)
 
   override def getForm(id: String): Future[Option[DraftForm]] = draftFormRepository.getForm(id)
+
+  override def updateForm(draftForm: DraftForm): Future[Int] = draftFormRepository.updateForm(draftForm)
 }
