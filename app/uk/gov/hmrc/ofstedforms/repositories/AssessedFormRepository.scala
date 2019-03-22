@@ -28,31 +28,25 @@ import uk.gov.hmrc.ofstedforms.models._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-@ImplementedBy(classOf[DefaultDraftFormRepository])
-trait DraftFormRepository {
+@ImplementedBy(classOf[DefaultAssessedFormRepository])
+trait AssessedFormRepository {
   def saveForm(form: Form): Future[Option[Form]]
-
-  def getForm(id: String): Future[Option[Form]]
 
   def getForms(): Future[List[Form]]
 }
 
 @Singleton
-class DefaultDraftFormRepository @Inject()(reactiveMongoComponent: ReactiveMongoComponent)
+class DefaultAssessedFormRepository @Inject()(reactiveMongoComponent: ReactiveMongoComponent)
   extends ReactiveRepository(
-    "draft-forms",
+    "assessed-forms",
     reactiveMongoComponent.mongoConnector.db,
     Form.formFormat)
-    with DraftFormRepository {
+    with AssessedFormRepository {
 
-  override def saveForm(draftForm: Form): Future[Option[Form]] = {
+  override def saveForm(assessedForm: Form): Future[Option[Form]] = {
     collection
-      .findAndUpdate(BSONDocument("id" -> draftForm.id), draftForm, fetchNewObject = true, upsert = true)
+      .findAndUpdate(BSONDocument("id" -> assessedForm.id), assessedForm, fetchNewObject = true, upsert = true)
       .map(_.result[Form])
-  }
-
-  override def getForm(id: String): Future[Option[Form]] = {
-    collection.find(BSONDocument("id" -> id)).one[Form]
   }
 
   override def getForms(): Future[List[Form]] =
@@ -60,5 +54,4 @@ class DefaultDraftFormRepository @Inject()(reactiveMongoComponent: ReactiveMongo
       .collect[List](-1, Cursor.FailOnError[List[Form]]())
 
 }
-
 

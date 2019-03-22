@@ -21,27 +21,40 @@ import java.util.UUID.randomUUID
 import javax.inject.{Inject, Singleton}
 import play.api.libs.json.{JsError, Json}
 import play.api.mvc._
-import uk.gov.hmrc.ofstedforms.models.{AuthenticatedUser, DraftForm, Occurrence}
-import uk.gov.hmrc.ofstedforms.service.FormSubmissionService
-import uk.gov.hmrc.play.bootstrap.controller.BaseController
+import uk.gov.hmrc.ofstedforms.models.{AuthenticatedUser, Form, Occurrence}
+import uk.gov.hmrc.ofstedforms.service.FormService
+import uk.gov.hmrc.play.bootstrap.controller.BackendController
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 @Singleton()
-class OfstedFormsController @Inject()(fs: FormSubmissionService) extends BaseController {
+class OfstedFormsController @Inject()(fs: FormService, cc: MessagesControllerComponents) extends BackendController(cc) {
 
-  // user functions
-  def createDraft(): Action[AnyContent] = Action.async {
+  //TODO: add logging
+  //TODO: add auth filter
+  def createDraft(): Action[AnyContent] = Action {
     implicit request =>
-      val draftForm = DraftForm(randomUUID().toString, "", Occurrence(AuthenticatedUser("", ""), ""))
-      fs.saveForm(draftForm).map {
-        case Some(res) => Ok(Json.obj("id" -> res.id))
-        case None => BadRequest("Initial draft form record was not inserted")
-      }.recover {
-        case e: Throwable => InternalServerError(s"${e.getMessage}")
+      val draftForm = Form(randomUUID().toString, "", Occurrence(AuthenticatedUser("", ""), ""))
+      request.body.asJson.get.validate[Form].asOpt match {
+        case Some(x) => Ok(Json.toJson(x))
+        case None => BadRequest("Bad payload")
       }
   }
+
+  //  request.body.asJson.get.validate[Form] match {
+  //    case JsSuccess(value, path) => Json.toJson(value)
+  //    //        {
+  //    //          fs.saveDraft(draftForm).map {
+  //    //            case Some(res) => Ok(Json.obj("id" -> res.id))
+  //    //            case None => BadRequest("Initial draft form record was not inserted")
+  //    //          }.recover {
+  //    //            case e: Throwable => InternalServerError(s"${e.getMessage}")
+  //    //          }
+  //    //        }
+  //    case JsError(errors) => InternalServerError(JsError.toJson(errors))
+  //  }
+
 
   def getForm(id: String): Action[AnyContent] = Action.async {
     implicit request =>
@@ -53,15 +66,16 @@ class OfstedFormsController @Inject()(fs: FormSubmissionService) extends BaseCon
       }
   }
 
-  def submitForm(id: String) = Action.async(parse.json) {
+
+  def saveDraftForm() = Action.async(parse.json) {
     implicit request =>
-      val formSubmission = request.body.validate[DraftForm]
+      val formSubmission = request.body.validate[Form]
       formSubmission.fold(
         errors => {
-          Future.successful(BadRequest(s"Invalid submission payload: ${JsError.toJson(errors)}"))
+          Future.successful(BadRequest(s"Invalid draft form payload: ${JsError.toJson(errors)}"))
         },
         form => {
-          fs.updateForm(form).map { _ => NoContent
+          fs.saveDraft(form).map { _ => NoContent
           }.recover {
             case e: Throwable => InternalServerError(s"${e.getMessage}")
           }
@@ -69,70 +83,43 @@ class OfstedFormsController @Inject()(fs: FormSubmissionService) extends BaseCon
       )
   }
 
-  // admin functions
+  def saveSubmittedForm() = Action.async(parse.json) {
+    implicit request =>
+      val formSubmission = request.body.validate[Form]
+      formSubmission.fold(
+        errors => {
+          Future.successful(BadRequest(s"Invalid submission payload: ${JsError.toJson(errors)}"))
+        },
+        form => {
+          fs.saveSubmission(form).map { _ => NoContent
+          }.recover {
+            case e: Throwable => InternalServerError(s"${e.getMessage}")
+          }
+        }
+      )
+  }
 
-  //  def findDraft(userId: String, formType: String) = {
-  //    //This represents the latest form which is in draft for this user and not in submitted - there should only be one of these
-  //    // first get all the draft forms
-  //    // then get all the submitted forms
-  //  }
+  def saveAssessedForm() = Action.async(parse.json) {
+    implicit request =>
+      val formSubmission = request.body.validate[Form]
+      formSubmission.fold(
+        errors => {
+          Future.successful(BadRequest(s"Invalid assessed form payload: ${JsError.toJson(errors)}"))
+        },
+        form => {
+          fs.saveAssessment(form).map { _ => NoContent
+          }.recover {
+            case e: Throwable => InternalServerError(s"${e.getMessage}")
+          }
+        }
+      )
+  }
 
-  //  def findSubmitted(userId: String, formType: String) = ??? //This represents the latest submitted form and not in annotated or assessed - there should only be one of these
-  //  def findAnnotatedForm(userId: String, formType: String) = ??? //This represents the latest annotated form and not in assessed - there should only be one of these
-  //  def findAssessed(userId: String, formType: String) = ??? // This represents the latest assessed - there should only be one of these
-
-  //if multiple forms return the latest form by ordering on timestamp
-  //  def findDraftForm(userId: String, formType: String) = ??? //This represents the latest submitted form and not in annotated or assessed - there should only be one of these
-  //  def findSubmittedForm(userId: String, formType: String) = ??? //This represents the latest annotated form and not in assessed - there should only be one of these
-  //  def findApprovedForm(userId: String, formType: String) = ??? // This represents the latest assessed - there should only be one of these
-  //  def findRejectedForm(userId: String, formType: String) = ??? // This represents the latest assessed - there should only be one of these
-
-  //  // POSTs
-  //  def saveDraftForm() = {
-  //    //
-  //  }
-
-  //  def saveSubmittedForm() = ???
-  //
-  //  def saveAnnotatedForm() = ???
-  //
-  //  def saveAssessedForm() = ???
-
-  //
-  //  def save() = Action.async(parse.json) {
-  //    implicit request =>
-  //      val formSubmission = request.body.validate[FormSubmission]
-  //      formSubmission.fold(
-  //        errors => {
-  //          Future.successful(BadRequest(Json.obj("message" -> JsError.toJson(errors))))
-  //        },
-  //        fs => {
-  //          fs.saveForm(fs).map { _ => Created
-  //          }.recover {
-  //            case t: Throwable ⇒ Logger.error(s"Failed to save the form identifiers")
-  //              InternalServerError
-  //          }
-  //        }
-  //      )
-  //  }
-
-  //  def get(userId: String): Action[AnyContent] = Action.async {
-  //    implicit request =>
-  //      fs.getFormId(userId).map {
-  //        case Some(x) => Ok(Json.toJson(x))
-  //        case None => BadRequest(s"No user exists with user id: ${userId}")
-  //      }.recover {
-  //        case t: Throwable ⇒ Logger.error(s"Failed to get form submission identifiers")
-  //          InternalServerError
-  //      }
-  //  }
-  //
-  //  def delete(userId: String): Action[AnyContent] = Action.async {
-  //    implicit request =>
-  //      fs.deleteForm(userId).map(_ => Ok("")).recover {
-  //        case t: Throwable ⇒ Logger.error(s"Failed to delete form submission identifiers")
-  //          InternalServerError
-  //      }
-  //  }
+  def getWorkList(): Action[AnyContent] = Action.async {
+    implicit request =>
+      fs.getWorkList().map {
+        forms => Ok(Json.toJson(forms))
+      }
+  }
 
 }

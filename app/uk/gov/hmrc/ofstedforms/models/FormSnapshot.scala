@@ -18,8 +18,8 @@ package uk.gov.hmrc.ofstedforms.models
 
 import play.api.libs.json.Json
 
-case class Occurrence(executor: AuthenticatedUser, moment: String)
+case class FormSnapshot(draft: Form, submitted: Form, assessed: Form)
 
-object Occurrence{
-  implicit val occurrenceFormat = Json.format[Occurrence]
+object FormSnapshot {
+  implicit val formDataFormat = Json.format[FormSnapshot]
 }

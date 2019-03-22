@@ -1,13 +1,9 @@
-# microservice specific routes
-
-# user endpoints
 POST        /form                   uk.gov.hmrc.ofstedforms.controllers.OfstedFormsController.createDraft()
-GET         /form/:id               uk.gov.hmrc.ofstedforms.controllers.OfstedFormsController.getForm(id : String)
-POST        /form/:id/submission    uk.gov.hmrc.ofstedforms.controllers.OfstedFormsController.submitForm(id : String)
+#GET         /form/:id               uk.gov.hmrc.ofstedforms.controllers.OfstedFormsController.getForm(id : String)
+#POST        /form/:id/draft         uk.gov.hmrc.ofstedforms.controllers.OfstedFormsController.draft(id : String)
+#POST        /form/:id/submission    uk.gov.hmrc.ofstedforms.controllers.OfstedFormsController.submission(id : String)
+#POST        /form/:id/assessed      uk.gov.hmrc.ofstedforms.controllers.OfstedFormsController.assessed(id : String)
 
 # admin endpoints
-#GET         /form/submissions       uk.gov.hmrc.ofstedforms.controllers.OfstedFormsController.getAllSubmittedForms()
-#GET         /form/:id               uk.gov.hmrc.ofstedforms.controllers.OfstedFormsController.getForm(id : String)
-#POST        /form/:id/annotated     uk.gov.hmrc.ofstedforms.controllers.OfstedFormsController.getAnnotatedForm(id : String)
-#POST        /form/:id/approved      uk.gov.hmrc.ofstedforms.controllers.OfstedFormsController.getApprovedForm(id : String)
-#POST        /form/:id/rejected      uk.gov.hmrc.ofstedforms.controllers.OfstedFormsController.getRejectedForm(id : String)
+# work list is a composite of submission + assessed
+#GET         /form/worklist         uk.gov.hmrc.ofstedforms.controllers.OfstedFormsController.getAllSubmittedAndAssessedForms()
