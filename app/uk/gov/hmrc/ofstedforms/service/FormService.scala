@@ -18,7 +18,8 @@ package uk.gov.hmrc.ofstedforms.service
 
 import com.google.inject.ImplementedBy
 import javax.inject.Inject
-import uk.gov.hmrc.ofstedforms.models.Form
+import play.api.Logger
+import uk.gov.hmrc.ofstedforms.models.{Form, FormSnapshot}
 import uk.gov.hmrc.ofstedforms.repositories.{AssessedFormRepository, DraftFormRepository, SubmittedFormRepository}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -34,7 +35,7 @@ trait FormService {
 
   def getWorkList(): Future[Set[Form]]
 
-  def getForm(id: String): Future[Option[Form]]
+  def getForm(id: String): Future[FormSnapshot]
 }
 
 class DefaultFormService @Inject()(
@@ -56,8 +57,12 @@ class DefaultFormService @Inject()(
     } yield (submissions ++ assessed).toSet
   }
 
-  override def getForm(id: String): Future[Option[Form]] = {
-    draftFormRepository.getForm(id)
+  override def getForm(id: String): Future[FormSnapshot] = {
+    for {
+      draft <- draftFormRepository.getForm(id)
+      submission <- submissionFormRepository.getForm(id)
+      assessment <- assessedFormRepository.getForm(id)
+    } yield FormSnapshot(draft, submission, assessment)
   }
 
 }

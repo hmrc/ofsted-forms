@@ -35,7 +35,7 @@
     </appender>
 
 
-    <logger name="accesslog" level="TRACE" additivity="false">
+    <logger name="accesslog" level="INFO" additivity="false">
         <appender-ref ref="ACCESS_LOG_FILE" />
     </logger>
 
@@ -43,17 +43,21 @@
         <appender-ref ref="STDOUT_IGNORE_NETTY" />
     </logger>
 
-    <logger name="com.google.inject" level="TRACE"/>
+    <logger name="com.google.inject" level="INFO"/>
 
-    <logger name="uk.gov" level="TRACE"/>
+    <logger name="uk.gov" level="INFO"/>
 
-    <logger name="application" level="TRACE"/>
+    <logger name="application" level="INFO"/>
 
-    <logger name="connector" level="TRACE">
+    <logger name="connector" level="INFO">
         <appender-ref ref="STDOUT"/>
     </logger>
 
-    <root level="TRACE">
+    <logger name="service" level="INFO">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+    <root level="INFO">
         <appender-ref ref="FILE"/>
         <appender-ref ref="STDOUT"/>
     </root>

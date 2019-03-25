@@ -18,6 +18,7 @@ package uk.gov.hmrc.ofstedforms.repositories
 
 import com.google.inject.ImplementedBy
 import javax.inject.{Inject, Singleton}
+import play.api.libs.json.Json
 import play.modules.reactivemongo.ReactiveMongoComponent
 import reactivemongo.api.Cursor
 import reactivemongo.bson.BSONDocument
@@ -40,7 +41,7 @@ trait DraftFormRepository {
 @Singleton
 class DefaultDraftFormRepository @Inject()(reactiveMongoComponent: ReactiveMongoComponent)
   extends ReactiveRepository(
-    "draft-forms",
+    "drafts",
     reactiveMongoComponent.mongoConnector.db,
     Form.formFormat)
     with DraftFormRepository {
@@ -56,7 +57,7 @@ class DefaultDraftFormRepository @Inject()(reactiveMongoComponent: ReactiveMongo
   }
 
   override def getForms(): Future[List[Form]] =
-    collection.find(BSONDocument()).cursor[Form]()
+    collection.find(Json.obj()).cursor[Form]()
       .collect[List](-1, Cursor.FailOnError[List[Form]]())
 
 }

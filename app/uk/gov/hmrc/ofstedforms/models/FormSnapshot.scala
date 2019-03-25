@@ -18,7 +18,7 @@ package uk.gov.hmrc.ofstedforms.models
 
 import play.api.libs.json.Json
 
-case class FormSnapshot(draft: Form, submitted: Form, assessed: Form)
+case class FormSnapshot(draft: Option[Form], submitted: Option[Form], assessed: Option[Form])
 
 object FormSnapshot {
   implicit val formDataFormat = Json.format[FormSnapshot]

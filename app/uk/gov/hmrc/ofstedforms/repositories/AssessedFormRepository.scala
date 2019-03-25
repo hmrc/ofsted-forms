@@ -18,6 +18,7 @@ package uk.gov.hmrc.ofstedforms.repositories
 
 import com.google.inject.ImplementedBy
 import javax.inject.{Inject, Singleton}
+import play.api.libs.json.Json
 import play.modules.reactivemongo.ReactiveMongoComponent
 import reactivemongo.api.Cursor
 import reactivemongo.bson.BSONDocument
@@ -32,13 +33,15 @@ import scala.concurrent.Future
 trait AssessedFormRepository {
   def saveForm(form: Form): Future[Option[Form]]
 
+  def getForm(id : String) : Future[Option[Form]]
+
   def getForms(): Future[List[Form]]
 }
 
 @Singleton
 class DefaultAssessedFormRepository @Inject()(reactiveMongoComponent: ReactiveMongoComponent)
   extends ReactiveRepository(
-    "assessed-forms",
+    "assessments",
     reactiveMongoComponent.mongoConnector.db,
     Form.formFormat)
     with AssessedFormRepository {
@@ -49,8 +52,12 @@ class DefaultAssessedFormRepository @Inject()(reactiveMongoComponent: ReactiveMo
       .map(_.result[Form])
   }
 
+  override def getForm(id: String): Future[Option[Form]] = {
+    collection.find(BSONDocument("id" -> id)).one[Form]
+  }
+
   override def getForms(): Future[List[Form]] =
-    collection.find(BSONDocument()).cursor[Form]()
+    collection.find(BSONDocument.empty).cursor[Form]()
       .collect[List](-1, Cursor.FailOnError[List[Form]]())
 
 }
