@@ -1,3 +1,8 @@
-# microservice specific routes
+POST        /form                   uk.gov.hmrc.ofstedforms.controllers.OfstedFormsController.createDraft()
+GET         /form/:id               uk.gov.hmrc.ofstedforms.controllers.OfstedFormsController.getForm(id : String)
+PUT         /form/draft             uk.gov.hmrc.ofstedforms.controllers.OfstedFormsController.saveDraft()
+POST        /form/submission        uk.gov.hmrc.ofstedforms.controllers.OfstedFormsController.saveSubmission()
+POST        /form/assessment        uk.gov.hmrc.ofstedforms.controllers.OfstedFormsController.saveAssessment()
 
-GET        /hello-world             uk.gov.hmrc.ofstedforms.controllers.MicroserviceHelloWorld.hello
+# admin
+#GET         /form/worklist         uk.gov.hmrc.ofstedforms.controllers.OfstedFormsController.getWorkList()
