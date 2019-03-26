@@ -19,7 +19,6 @@ package uk.gov.hmrc.ofstedforms.controllers
 import java.util.UUID.randomUUID
 
 import javax.inject.{Inject, Singleton}
-import play.api.Logger
 import play.api.libs.json.{JsError, Json}
 import play.api.mvc._
 import uk.gov.hmrc.ofstedforms.models.{AuthenticatedUser, Form, FormSnapshot, Occurrence}
@@ -108,15 +107,11 @@ class OfstedFormsController @Inject()(fs: FormService, cc: MessagesControllerCom
       )
   }
 
-
-    //FIXME : doesn't work for some reason - maybe a reactivemongo driver issue
-//  def getWorkList(): Action[AnyContent] = Action.async {
-//    implicit request =>
-//      fs.getWorkList().map {
-//        forms => {
-//          Ok(Json.toJson(forms))
-//        }
-//      }
-//  }
+  def getWorkList() = Action.async {
+    implicit request =>
+      fs.getWorkList().map(x => Ok(Json.toJson(x))).recover {
+        case e: Throwable => InternalServerError(s"${e.getMessage}")
+      }
+  }
 
 }
