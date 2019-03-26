@@ -18,7 +18,6 @@ package uk.gov.hmrc.ofstedforms.service
 
 import com.google.inject.ImplementedBy
 import javax.inject.Inject
-import play.api.Logger
 import uk.gov.hmrc.ofstedforms.models.{Form, FormSnapshot}
 import uk.gov.hmrc.ofstedforms.repositories.{AssessedFormRepository, DraftFormRepository, SubmittedFormRepository}
 
@@ -64,5 +63,4 @@ class DefaultFormService @Inject()(
       assessment <- assessedFormRepository.getForm(id)
     } yield FormSnapshot(draft, submission, assessment)
   }
-
 }

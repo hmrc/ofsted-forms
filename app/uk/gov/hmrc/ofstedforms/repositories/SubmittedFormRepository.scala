@@ -19,10 +19,8 @@ package uk.gov.hmrc.ofstedforms.repositories
 
 import com.google.inject.ImplementedBy
 import javax.inject.{Inject, Singleton}
-import play.api.libs.json.Json
+import play.api.libs.json.{JsObject, Json}
 import play.modules.reactivemongo.ReactiveMongoComponent
-import reactivemongo.api.Cursor
-import reactivemongo.bson.BSONDocument
 import reactivemongo.play.json.ImplicitBSONHandlers._
 import uk.gov.hmrc.mongo.ReactiveRepository
 import uk.gov.hmrc.ofstedforms.models._
@@ -49,16 +47,15 @@ class DefaultSubmittedFormRepository @Inject()(reactiveMongoComponent: ReactiveM
 
   override def saveForm(submittedForm: Form): Future[Option[Form]] = {
     collection
-      .findAndUpdate(BSONDocument("id" -> submittedForm.id), submittedForm, fetchNewObject = true, upsert = true)
+      .findAndUpdate(Json.obj("id" -> submittedForm.id), submittedForm, fetchNewObject = true, upsert = true)
       .map(_.result[Form])
   }
 
-  override def getForm(id: String): Future[Option[Form]] = {
-    collection.find(BSONDocument("id" -> id)).one[Form]
-  }
+  override def getForm(id: String): Future[Option[Form]] =
+    collection
+      .find(Json.obj("id" -> id), projection = Option.empty[JsObject])
+      .one[Form]
 
-  override def getForms(): Future[List[Form]] =
-    collection.find(BSONDocument.empty).cursor[Form]().
-      collect[List](-1, Cursor.FailOnError[List[Form]]())
+  override def getForms(): Future[List[Form]] = findAll()
 
 }
