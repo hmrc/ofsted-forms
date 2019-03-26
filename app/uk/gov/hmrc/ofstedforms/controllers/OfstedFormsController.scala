@@ -109,7 +109,9 @@ class OfstedFormsController @Inject()(fs: FormService, cc: MessagesControllerCom
 
   def getWorkList() = Action.async {
     implicit request =>
-      fs.getWorkList().map(x => Ok(Json.toJson(x)))
+      fs.getWorkList().map(x => Ok(Json.toJson(x))).recover {
+        case e: Throwable => InternalServerError(s"${e.getMessage}")
+      }
   }
 
 }
