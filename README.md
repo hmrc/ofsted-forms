@@ -1,7 +1,6 @@
-
 # ofsted-forms
 
-This is a placeholder README.md for a new repository
+This service is not complete. The project has been shelved until further instruction.
 
 ### License
 
